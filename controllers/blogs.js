@@ -14,7 +14,6 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    console.log(req.body);
     const blog = await Blog.create(req.body);
     return res.json(blog);
   } catch(error) {
@@ -22,9 +21,19 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.put('/:id', blogFinder, async (req, res) => {
+  if (req.blog) {
+    const updatedBlog = { ...req.blog.toJSON() }; // Create a new instance of the blog object
+    updatedBlog.likes = parseInt(req.blog.likes) + 1;
+    await req.blog.update(updatedBlog); // Update the existing blog instance with the new likes count
+    res.json({ likes: req.blog.likes });
+  } else {
+    res.status(404).end();
+  }
+});
+
 router.delete('/:id', blogFinder, async (req, res) => {
   if (req.blog) {
-    console.log(req.blog.toJSON());
     await req.blog.destroy();
     res.json({ message: "Deleted blog" });
   } else {
