@@ -10,6 +10,19 @@ app.use(express.json())
 
 app.use('/api/blogs', blogsRouter)
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  // Check if the error indicates resource not found
+  if (error.message.includes('null')) {
+    return response.status(404).send({ error: 'Resource not found' });
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
+
 const start = async () => {
   await connectToDatabase()
   app.listen(PORT, () => {

@@ -7,35 +7,44 @@ const blogFinder = async (req, res, next) => {
   next()
 }
 
-router.get('/', async (req, res) => {
-  const blogs = await Blog.findAll();
-  res.json(blogs);
-})
-
-router.post('/', async (req, res) => {
-  try {
-    const blog = await Blog.create(req.body);
-    return res.json(blog);
-  } catch(error) {
-    return res.status(400).json({ error });
-  }
+router.get('/', (req, res, next) => {
+  Blog.findAll()
+    .then(blogs => {
+      res.json(blogs);
+    })
+    .catch(error => next(error));
 });
 
-router.put('/:id', blogFinder, async (req, res) => {
+router.post('/', (req, res, next) => {
+  Blog.create(req.body)
+    .then(blog => {
+      res.json(blog);
+    })
+    .catch(error => next(error));
+});
+
+router.put('/:id', blogFinder, (req, res, next) => {
   if (req.blog) {
-    const updatedBlog = { ...req.blog.toJSON() }; // Create a new instance of the blog object
+    const updatedBlog = { ...req.blog.toJSON() };
     updatedBlog.likes = parseInt(req.blog.likes) + 1;
-    await req.blog.update(updatedBlog); // Update the existing blog instance with the new likes count
-    res.json({ likes: req.blog.likes });
+
+    req.blog.update(updatedBlog)
+      .then(() => {
+        res.json({ likes: req.blog.likes });
+      })
+      .catch(error => next(error));
   } else {
     res.status(404).end();
   }
 });
 
-router.delete('/:id', blogFinder, async (req, res) => {
+router.delete('/:id', blogFinder, (req, res, next) => {
   if (req.blog) {
-    await req.blog.destroy();
-    res.json({ message: "Deleted blog" });
+    req.blog.destroy()
+      .then(() => {
+        res.json({ message: "Deleted blog" });
+      })
+      .catch(error => next(error));
   } else {
     res.status(404).end();
   }
