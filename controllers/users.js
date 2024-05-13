@@ -10,21 +10,23 @@ const userNameFinder = async (req, res, next) => {
   next()
 }
 
-router.get('/', async (req, res) => {
-  const users = await User.findAll()
-  res.json(users)
+router.get('/', async (req, res, next) => {
+  User.findAll()
+  .then(users => {
+    res.json(users);
+  })
+  .catch(error => next(error));
 })
 
-router.post('/', async (req, res) => {
-  try {
-    const user = await User.create(req.body)
-    res.json(user)
-  } catch(error) {
-    return res.status(400).json({ error })
-  }
+router.post('/', async (req, res, next) => {
+  User.create(req.body)
+    .then(user => {
+      res.json(user);
+    })
+    .catch(error => next(error));
 })
 
-router.put('/:username', userNameFinder, async (req, res) => {
+router.put('/:username', userNameFinder, async (req, res, next) => {
   if (req.user) {
     const updatedUser = { ...req.user.toJSON() };
     updatedUser.username = req.body.username;
