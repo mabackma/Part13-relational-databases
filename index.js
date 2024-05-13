@@ -16,7 +16,13 @@ app.use('/api/login', loginRouter);
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
-  res.status(500).json({ error: 'Internal server error', message: error.message });
+  
+  if (error.name === 'SequelizeValidationError') {
+    const validationErrors = error.errors.map(err => err.message);
+    return response.status(400).json({ error: validationErrors });
+  } else {
+    response.status(500).json({ error: 'Internal server error' });
+  }
 }
 
 app.use(errorHandler)
